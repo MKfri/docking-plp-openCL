@@ -17,7 +17,11 @@ const std::vector<std::string> WorkerCL::KernelNames = {
     "kernelInit3",
     "kernelInitGrid",
     "kernelSyncToModel",
-    "kernelPLP",
+    //"kernelPLP",
+    "kernelSfPLP",
+    "kernelSfClash",
+    "kernelSfTors",
+    // TODO "kernelSfSite", se v hpp
     "kernelSort",
     "kernelNormalize",
     "kernelCreateNew",
@@ -200,14 +204,33 @@ void WorkerCL::kernelSetArgs(Data& data, Batch& batch) {
     CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSyncToModel], 4, sizeof(cl_mem), (void *)&cl_popNewIndex));
     CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSyncToModel], 5, sizeof(cl_mem), (void *)&cl_ligandAtoms));
 
-    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 0, sizeof(cl_mem), (void *)&cl_parameters));
-    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 1, sizeof(cl_mem), (void *)&cl_ligandAtomsSmallGlobalAll));
-    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 2, sizeof(cl_mem), (void *)&cl_globalPopulations));
-    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 3, sizeof(cl_mem), (void *)&cl_popNewIndex));
-    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 4, sizeof(cl_mem), (void *)&cl_ligandAtomPairsForClash));
-    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 5, sizeof(cl_mem), (void *)&cl_dihedralRefData));
-    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 6, sizeof(cl_mem), (void *)&cl_grid));
-    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 7, sizeof(cl_mem), (void *)&cl_ligandAtoms));
+    // CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 0, sizeof(cl_mem), (void *)&cl_parameters));
+    // CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 1, sizeof(cl_mem), (void *)&cl_ligandAtomsSmallGlobalAll));
+    // CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 2, sizeof(cl_mem), (void *)&cl_globalPopulations));
+    // CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 3, sizeof(cl_mem), (void *)&cl_popNewIndex));
+    // CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 4, sizeof(cl_mem), (void *)&cl_ligandAtomPairsForClash));
+    // CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 5, sizeof(cl_mem), (void *)&cl_dihedralRefData));
+    // CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 6, sizeof(cl_mem), (void *)&cl_grid));
+    // CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelPLP], 7, sizeof(cl_mem), (void *)&cl_ligandAtoms));
+
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfPLP], 0, sizeof(cl_mem), (void *)&cl_parameters));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfPLP], 1, sizeof(cl_mem), (void *)&cl_ligandAtomsSmallGlobalAll));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfPLP], 2, sizeof(cl_mem), (void *)&cl_globalPopulations));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfPLP], 3, sizeof(cl_mem), (void *)&cl_popNewIndex));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfPLP], 4, sizeof(cl_mem), (void *)&cl_grid));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfPLP], 5, sizeof(cl_mem), (void *)&cl_ligandAtoms));
+
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfClash], 0, sizeof(cl_mem), (void *)&cl_parameters));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfClash], 1, sizeof(cl_mem), (void *)&cl_ligandAtomsSmallGlobalAll));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfClash], 2, sizeof(cl_mem), (void *)&cl_globalPopulations));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfClash], 3, sizeof(cl_mem), (void *)&cl_popNewIndex));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfClash], 4, sizeof(cl_mem), (void *)&cl_ligandAtomPairsForClash));
+
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfTors], 0, sizeof(cl_mem), (void *)&cl_parameters));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfTors], 1, sizeof(cl_mem), (void *)&cl_globalPopulations));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfTors], 2, sizeof(cl_mem), (void *)&cl_popNewIndex));
+    CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSfTors], 3, sizeof(cl_mem), (void *)&cl_dihedralRefData));
+    // Konec novih
 
     CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSort], 0, sizeof(cl_mem), (void *)&cl_parameters));
     CHECK_CL_ERROR(error = clSetKernelArg(kernels[kernelSort], 1, sizeof(cl_mem), (void *)&cl_globalPopulations));
@@ -244,34 +267,48 @@ void WorkerCL::initialStep(Data& data, Batch& batch) {
     TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelInit], 2, NULL, g_kernelInit, l_kernelInit, 0, NULL, NULL), data.t_kernelInit, data.tot_kernelInit);
     
     ASIGN_SIZE_2D(g_kernelInit2, (data.parameters.popMaxSize / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
-	ASIGN_SIZE_2D(l_kernelInit2, data.LOCAL_SIZE, 1);
+    ASIGN_SIZE_2D(l_kernelInit2, data.LOCAL_SIZE, 1);
     TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelInit2], 2, NULL, g_kernelInit2, l_kernelInit2, 0, NULL, NULL), data.t_kernelInit2, data.tot_kernelInit2);
 
     g_kernelInit3[0] = data.LOCAL_SIZE;
-	l_kernelInit3[0] = data.LOCAL_SIZE;
+    l_kernelInit3[0] = data.LOCAL_SIZE;
     TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelInit3], 1, NULL, g_kernelInit3, l_kernelInit3, 0, NULL, NULL), data.t_kernelInit3, data.tot_kernelInit3);
 
     // Read numGoodReceptors (blocking)
     TIME_CL(error = clEnqueueReadBuffer(commandQueue, cl_numGoodReceptors, CL_TRUE, 0, data.numGoodReceptorsSize, &(data.numGoodReceptors), 0, NULL, NULL), data.t_dataToCPU, data.tot_dataToCPU);
 
     ASIGN_SIZE_2D(g_kernelInitGrid, (data.parameters.grid.N / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.grid.totalPLPClasses);
-	ASIGN_SIZE_2D(l_kernelInitGrid, data.LOCAL_SIZE, 1);
+    ASIGN_SIZE_2D(l_kernelInitGrid, data.LOCAL_SIZE, 1);
     TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelInitGrid], 2, NULL, g_kernelInitGrid, l_kernelInitGrid, 0, NULL, NULL), data.t_kernelInitGrid, data.tot_kernelInitGrid);
 
     ASIGN_SIZE_2D(g_kernelSyncToModel, (data.parameters.popSize / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
-	ASIGN_SIZE_2D(l_kernelSyncToModel, data.LOCAL_SIZE, 1);
+    ASIGN_SIZE_2D(l_kernelSyncToModel, data.LOCAL_SIZE, 1);
     TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelSyncToModel], 2, NULL, g_kernelSyncToModel, l_kernelSyncToModel, 0, NULL, NULL), data.t_kernelSyncToModel, data.tot_kernelSyncToModel);
 
-    ASIGN_SIZE_2D(g_kernelPLP, (data.parameters.popSize / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
-	ASIGN_SIZE_2D(l_kernelPLP, data.LOCAL_SIZE, 1);
-    TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelPLP], 2, NULL, g_kernelPLP, l_kernelPLP, 0, NULL, NULL), data.t_kernelPLP, data.tot_kernelPLP);
+    // ASIGN_SIZE_2D(g_kernelPLP, (data.parameters.popSize / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
+    // ASIGN_SIZE_2D(l_kernelPLP, data.LOCAL_SIZE, 1);
+    // TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelPLP], 2, NULL, g_kernelPLP, l_kernelPLP, 0, NULL, NULL), data.t_kernelPLP, data.tot_kernelPLP);
+
+    ASIGN_SIZE_2D(g_kernelSfPLP, (data.parameters.popSize / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
+    ASIGN_SIZE_2D(l_kernelSfPLP, data.LOCAL_SIZE, 1);
+    TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelSfPLP], 2, NULL, g_kernelSfPLP, l_kernelSfPLP, 0, NULL, NULL), data.t_kernelSfPLP, data.tot_kernelSfPLP);
+
+    ASIGN_SIZE_2D(g_kernelSfClash, (data.parameters.popSize / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
+    ASIGN_SIZE_2D(l_kernelSfClash, data.LOCAL_SIZE, 1);
+    TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelSfClash], 2, NULL, g_kernelSfClash, l_kernelSfClash, 0, NULL, NULL), data.t_kernelSfClash, data.tot_kernelSfClash);
+
+    ASIGN_SIZE_2D(g_kernelSfTors, (data.parameters.popSize / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
+    ASIGN_SIZE_2D(l_kernelSfTors, data.LOCAL_SIZE, 1);
+    TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelSfTors], 2, NULL, g_kernelSfTors, l_kernelSfTors, 0, NULL, NULL), data.t_kernelSfClash, data.tot_kernelSfClash);
+
+
 
     ASIGN_SIZE_2D(g_kernelSort, data.LOCAL_SIZE, data.parameters.nruns);
-	ASIGN_SIZE_2D(l_kernelSort, data.LOCAL_SIZE, 1);
+    ASIGN_SIZE_2D(l_kernelSort, data.LOCAL_SIZE, 1);
     TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelSort], 2, NULL, g_kernelSort, l_kernelSort, 0, NULL, NULL), data.t_kernelSort, data.tot_kernelSort);
 
     ASIGN_SIZE_2D(g_kernelNormalize, data.LOCAL_SIZE, data.parameters.nruns);
-	ASIGN_SIZE_2D(l_kernelNormalize, data.LOCAL_SIZE, 1);
+    ASIGN_SIZE_2D(l_kernelNormalize, data.LOCAL_SIZE, 1);
     TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelNormalize], 2, NULL, g_kernelNormalize, l_kernelNormalize, 0, NULL, NULL), data.t_kernelNormalize, data.tot_kernelNormalize);
 
     // Read initial best score (blocking)
@@ -282,14 +319,17 @@ void WorkerCL::initialStep(Data& data, Batch& batch) {
     
     // Change size
     ASIGN_SIZE_2D(g_kernelSyncToModel, (data.parameters.nReplicates / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
-	ASIGN_SIZE_2D(g_kernelPLP, (data.parameters.nReplicates / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
+    // ASIGN_SIZE_2D(g_kernelPLP, (data.parameters.nReplicates / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
+    ASIGN_SIZE_2D(g_kernelSfPLP, (data.parameters.nReplicates / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
+    ASIGN_SIZE_2D(g_kernelSfClash, (data.parameters.nReplicates / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
+    ASIGN_SIZE_2D(g_kernelSfTors, (data.parameters.nReplicates / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
 
     // Set size
     ASIGN_SIZE_2D(g_kernelCreateNew, (data.parameters.nReplicatesNumThreads / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE, data.parameters.nruns);
-	ASIGN_SIZE_2D(l_kernelCreateNew, data.LOCAL_SIZE, 1);
+    ASIGN_SIZE_2D(l_kernelCreateNew, data.LOCAL_SIZE, 1);
 
     g_kernelFinalize[0] = (data.parameters.nruns / data.LOCAL_SIZE)*data.LOCAL_SIZE + data.LOCAL_SIZE;
-	l_kernelFinalize[0] = data.LOCAL_SIZE;
+    l_kernelFinalize[0] = data.LOCAL_SIZE;
 }
 
 void WorkerCL::runStep(Data& data, Batch& batch) {
@@ -299,7 +339,12 @@ void WorkerCL::runStep(Data& data, Batch& batch) {
 
     // Same as initialStep (without inits)
     TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelSyncToModel], 2, NULL, g_kernelSyncToModel, l_kernelSyncToModel, 0, NULL, NULL), data.t_kernelSyncToModel, data.tot_kernelSyncToModel);
-    TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelPLP], 2, NULL, g_kernelPLP, l_kernelPLP, 0, NULL, NULL), data.t_kernelPLP, data.tot_kernelPLP);
+
+    //TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelPLP], 2, NULL, g_kernelPLP, l_kernelPLP, 0, NULL, NULL), data.t_kernelPLP, data.tot_kernelPLP);
+    TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelSfPLP], 2, NULL, g_kernelSfPLP, l_kernelSfPLP, 0, NULL, NULL), data.t_kernelSfPLP, data.tot_kernelSfPLP);
+    TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelSfClash], 2, NULL, g_kernelSfClash, l_kernelSfClash, 0, NULL, NULL), data.t_kernelSfClash, data.tot_kernelSfClash);
+    TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelSfTors], 2, NULL, g_kernelSfTors, l_kernelSfTors, 0, NULL, NULL), data.t_kernelSfTors, data.tot_kernelSfTors);
+
     TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelSort], 2, NULL, g_kernelSort, l_kernelSort, 0, NULL, NULL), data.t_kernelSort, data.tot_kernelSort);
     TIME_CL(error = clEnqueueNDRangeKernel(commandQueue, kernels[kernelNormalize], 2, NULL, g_kernelNormalize, l_kernelNormalize, 0, NULL, NULL), data.t_kernelNormalize, data.tot_kernelNormalize);
     

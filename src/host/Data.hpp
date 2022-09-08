@@ -243,8 +243,16 @@ public:
     double tot_kernelInitGrid = 0.0;
     double t_kernelSyncToModel = 0.0;
     double tot_kernelSyncToModel = 0.0;
-    double t_kernelPLP = 0.0;
-    double tot_kernelPLP = 0.0;
+
+    // double t_kernelPLP = 0.0;
+    // double tot_kernelPLP = 0.0;
+    double t_kernelSfPLP = 0.0;
+    double tot_kernelSfPLP = 0.0;
+    double t_kernelSfClash = 0.0;
+    double tot_kernelSfClash = 0.0;
+    double t_kernelSfTors = 0.0;
+    double tot_kernelSfTors = 0.0;
+
     double t_kernelSort = 0.0;
     double tot_kernelSort = 0.0;
     double t_kernelNormalize = 0.0;

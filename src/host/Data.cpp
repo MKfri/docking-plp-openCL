@@ -751,7 +751,8 @@ void Data::saveTimersToFile(std::string path) {
     fprintf(fout,"Data to CPU time,%lf\r\n", tot_dataToCPU);
     fprintf(fout,"Kernels set args time,%lf\r\n", tot_kernelSetArgs);
     double totalKernelTime = tot_kernelInit + tot_kernelInit2 + tot_kernelInit3 + tot_kernelInitGrid
-                            + tot_kernelSyncToModel + tot_kernelPLP
+                            + tot_kernelSyncToModel + tot_kernelSfPLP
+                            + tot_kernelSfClash + tot_kernelSfTors
                             + tot_kernelSort + tot_kernelNormalize
                             + tot_kernelCreateNew
                             + tot_kernelFinalize;// +...
@@ -761,7 +762,11 @@ void Data::saveTimersToFile(std::string path) {
     fprintf(fout,"kernelInit3 time,%lf\r\n", tot_kernelInit3);
     fprintf(fout,"kernelInitGrid time,%lf\r\n", tot_kernelInitGrid);
     fprintf(fout,"kernelSyncToModel time,%lf\r\n", tot_kernelSyncToModel);
-    fprintf(fout,"kernelPLP time,%lf\r\n", tot_kernelPLP);
+    // fprintf(fout,"kernelPLP time,%lf\r\n", tot_kernelPLP);
+    fprintf(fout,"kernelSfPLP time,%lf\r\n", tot_kernelSfPLP);
+    fprintf(fout,"kernelSfClash time,%lf\r\n", tot_kernelSfClash);
+    fprintf(fout,"kernelSfTors time,%lf\r\n", tot_kernelSfTors);
+    
     fprintf(fout,"kernelSort time,%lf\r\n", tot_kernelSort);
     fprintf(fout,"kernelNormalize time,%lf\r\n", tot_kernelNormalize);
     fprintf(fout,"kernelCreateNew time,%lf\r\n", tot_kernelCreateNew);

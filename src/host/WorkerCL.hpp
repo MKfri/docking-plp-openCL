@@ -32,7 +32,11 @@ public:
         kernelInit3,
         kernelInitGrid,
         kernelSyncToModel,
-        kernelPLP,
+        //kernelPLP,
+        kernelSfPLP,
+        kernelSfClash,
+        kernelSfTors,
+        // TODO "kernelSfSite", se v .cpp
         kernelSort,
         kernelNormalize,
         kernelCreateNew,
@@ -82,8 +86,22 @@ public:
     size_t l_kernelInitGrid[2];
     size_t g_kernelSyncToModel[2];
     size_t l_kernelSyncToModel[2];
-    size_t g_kernelPLP[2];
-    size_t l_kernelPLP[2];
+
+    //size_t g_kernelPLP[2];
+    //size_t l_kernelPLP[2];
+
+    size_t g_kernelSfPLP[2];
+    size_t l_kernelSfPLP[2];
+    size_t g_kernelSfClash[2];
+    size_t l_kernelSfClash[2];
+    size_t g_kernelSfTors[2];
+    size_t l_kernelSfTors[2];
+    
+    // size_t g_kernelSfSite[2];
+    // size_t l_kernelSfSite[2];
+    //size_t g_kernelSf[2];
+    //size_t l_kernelSf[2];
+    
     size_t g_kernelSort[2];
     size_t l_kernelSort[2];
     size_t g_kernelNormalize[2];
