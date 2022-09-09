@@ -92,7 +92,7 @@ Float CompareVectorPosition(global Float* g1, global Float* g2, constant paramet
             } else if (cosHalfTheta > PLUS_1_0f) {
                 cosHalfTheta = PLUS_1_0f;
             }
-            Float absDiff = fabs(StandardisedValueRotation(2.0f * acos(cosHalfTheta)));
+            Float absDiff = fabs(StandardisedValueRotation(PLUS_2_0f * acos(cosHalfTheta)));
             Float relDiff = absDiff / rotStepSize;
             retVal = fmax(retVal, relDiff);
         }

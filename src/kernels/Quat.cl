@@ -159,7 +159,7 @@ void GetQuatFromAlignVectors(Float* v, Float* ref, Float* q_s, Float* q_v) {
   // Unitise the two vectors
   Float len = lengthNorm3(v);
   Float refLen = lengthNorm3(ref);
-  if ((len < 0.001f) || (refLen < 0.001f)) {
+  if ((len < PLUS_0_001f) || (refLen < PLUS_0_001f)) {
     // RbtBadArgument
     printf("[Quat] [GetQuatFromAlignVectors] [Zero length vector (v or ref)]\n");
   }

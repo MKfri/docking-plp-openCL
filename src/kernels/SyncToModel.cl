@@ -126,7 +126,7 @@ void GetCenterOfMass(Float* com, global AtomGPUsmall* atoms, global AtomGPU* lig
     com[2] = PLUS_0_0f;
     
     // Accumulate sum of mass*coord
-    Float totalMass = 0.0f;
+    Float totalMass = PLUS_0_0f;
     for(int i = 0; i < numAtoms; i++) {
         global AtomGPUsmall* tempAtom = getAtomGPUsmallFromBase(popMaxSize, i, atoms);
         Float tempMass = ligandAtomsData[i].atomicMass;

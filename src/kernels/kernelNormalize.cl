@@ -76,7 +76,7 @@ __kernel void kernelNormalize(constant parametersForGPU* parameters, global Floa
             global Float* individual = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulations);
 
             tempScore = individual[chromStoreLen - CHROM_SUBTRACT_FOR_SCORE];
-            tempScoreRW = fmax(0.0f, tempScore - offset);
+            tempScoreRW = fmax(PLUS_0_0f, tempScore - offset);
 
             tempScoreRW += partialSum;
 

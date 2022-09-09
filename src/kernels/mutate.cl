@@ -225,7 +225,7 @@ void CorrectTetheredOrientation(Float* chromosomeOrientation, Float* initOrienta
         cosHalfTheta = PLUS_1_0f;
     }
     // Theta is the rotation angle required to realign with reference
-    Float theta = StandardisedValueRotation(2.0f * acos(cosHalfTheta));
+    Float theta = StandardisedValueRotation(PLUS_2_0f * acos(cosHalfTheta));
     // Deal with pos and neg angles independently as we have to
     // invert the rotation axis for negative angles
     Float axis[3];

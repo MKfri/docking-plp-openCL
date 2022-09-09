@@ -125,7 +125,7 @@ Journal of computational chemistry 10.8 (1989): 982-1012.
 */
 inline Float PLPtorsional(Float angle, Float k, Float s) {
 
-    return k * (1.0f + s/fabs(s) * cos(fabs(s) * angle));
+    return k * (PLUS_1_0f + s/fabs(s) * cos(fabs(s) * angle));
 }
 
 #endif
