@@ -1,12 +1,14 @@
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-#include <PLP.cl>
-#include <grid.cl>
+#include "RealConstants.cl"
+#include "constants.cl"
+
+#include "PLP.cl"
+#include "grid.cl"
 
 __kernel void kernelSfPLP(constant parametersForGPU* parameters,
                     global AtomGPUsmall* ligandAtomsSmallGlobalAll,
-                    global float* globalPopulations,
+                    global Float* globalPopulations,
                     global int* popNewIndex,
                     global GridPointGPU* grid,
                     global AtomGPU* ligandAtoms) {
@@ -14,7 +16,7 @@ __kernel void kernelSfPLP(constant parametersForGPU* parameters,
     uint runID = get_global_id(RUN_ID_2D);
     uint individualID = get_global_id(INDIVIDUAL_ID_2D);
 
-    float plpScore = 0.0f;
+    Float plpScore = PLUS_0_0f;
 
     // What part of population to Score (existing (only initial) or new pop) (ALL THREADS SAME PATH).
     if (popNewIndex[0] != 0) {
@@ -40,11 +42,11 @@ __kernel void kernelSfPLP(constant parametersForGPU* parameters,
         ownGrid.SXYZ[1] = parameters->grid.SXYZ[1];
         ownGrid.SXYZ[2] = parameters->grid.SXYZ[2];
 
-        float min[3];
+        Float min[3];
         min[0] = parameters->dockingSiteInfo.minCavity.x;
         min[1] = parameters->dockingSiteInfo.minCavity.y;
         min[2] = parameters->dockingSiteInfo.minCavity.z;
-        float max[3];
+        Float max[3];
         max[0] = parameters->dockingSiteInfo.maxCavity.x;
         max[1] = parameters->dockingSiteInfo.maxCavity.y;
         max[2] = parameters->dockingSiteInfo.maxCavity.z;
@@ -52,10 +54,10 @@ __kernel void kernelSfPLP(constant parametersForGPU* parameters,
         // f_plp and c_site term:
         for (int i = 0; i < parameters->ligandNumAtoms; i++) {
             global AtomGPUsmall* tempAtom = getAtomGPUsmallFromBase(parameters->popMaxSize, i, ligandAtomsOwn);
-            plpScore += GetSmoothedValue(tempAtom, &(ligandAtoms[i]), (float*)min, (float*)max, parameters, &ownGrid, grid);
+            plpScore += GetSmoothedValue(tempAtom, &(ligandAtoms[i]), (Float*)min, (Float*)max, parameters, &ownGrid, grid);
         }
         
-        global float* individual = getIndividual(parameters->popMaxSize,
+        global Float* individual = getIndividual(parameters->popMaxSize,
                                                 runID, individualID,
                                                 parameters->chromStoreLen,
                                                 globalPopulations);

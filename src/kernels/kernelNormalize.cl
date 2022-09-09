@@ -1,8 +1,10 @@
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-__kernel void kernelNormalize(constant parametersForGPU* parameters, global float* globalPopulations,
-                    local float* localScore, global float* bestScore) {
+#include "RealConstants.cl"
+#include "constants.cl"
+
+__kernel void kernelNormalize(constant parametersForGPU* parameters, global Float* globalPopulations,
+                    local Float* localScore, global Float* bestScore) {
 
     uint runID=get_global_id(RUN_ID_2D);
 
@@ -22,13 +24,13 @@ __kernel void kernelNormalize(constant parametersForGPU* parameters, global floa
     int popMaxSize = parameters->popMaxSize;
     int chromStoreLen = parameters->chromStoreLen;
 
-    float sum = 0.0f;
-    float sumSq = 0.0f;
-    float tempScore;
+    Float sum = PLUS_0_0f;
+    Float sumSq = PLUS_0_0f;
+    Float tempScore;
 
     for(int i=startIndex; i < endIndex && i < size; i++) {
         
-        global float* individual = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulations);
+        global Float* individual = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulations);
         tempScore = individual[chromStoreLen - CHROM_SUBTRACT_FOR_SCORE];
 
         sum += tempScore;
@@ -55,23 +57,23 @@ __kernel void kernelNormalize(constant parametersForGPU* parameters, global floa
 
     barrier(CLK_LOCAL_MEM_FENCE);
 
-    float m_scoreMean = sum / size;
-    float m_scoreVariance = (sumSq / size) - (m_scoreMean * m_scoreMean);
-    float sigma = sqrt(m_scoreVariance);
+    Float m_scoreMean = sum / size;
+    Float m_scoreVariance = (sumSq / size) - (m_scoreMean * m_scoreMean);
+    Float sigma = sqrt(m_scoreVariance);
     // calculate scaled fitness values using sigma truncation
     // Goldberg page 124
-    float m_c = 2.0f;// Sigma Truncation Multiplier
-    float offset = m_scoreMean - m_c * sigma;
-    float partialSum = 0.0f;
+    Float m_c = PLUS_2_0f;// Sigma Truncation Multiplier
+    Float offset = m_scoreMean - m_c * sigma;
+    Float partialSum = PLUS_0_0f;
     
     // First set the unnormalised fitness values
-    float tempScoreRW;
+    Float tempScoreRW;
     // FIXME: this is sequencial code...
-    if(localID == 0) {
+    if (localID == 0) {
 
-        for(int i=0; i < size; i++) {
+        for (int i = 0; i < size; i++) {
             
-            global float* individual = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulations);
+            global Float* individual = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulations);
 
             tempScore = individual[chromStoreLen - CHROM_SUBTRACT_FOR_SCORE];
             tempScoreRW = fmax(0.0f, tempScore - offset);
@@ -87,11 +89,11 @@ __kernel void kernelNormalize(constant parametersForGPU* parameters, global floa
     barrier(CLK_LOCAL_MEM_FENCE);
 
     //NormaliseRWFitness
-    float total = localScore[0];
+    Float total = localScore[0];
 
     for(int i=startIndex; i < endIndex && i < size; i++) {
         
-        global float* individual = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulations);
+        global Float* individual = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulations);
         individual[chromStoreLen - CHROM_SUBTRACT_FOR_RW_FITNESS] /= total;
 
         // set best score

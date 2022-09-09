@@ -1,7 +1,10 @@
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-#include <grid.cl>
+#include "RealConstants.cl"
+#include "constants.cl"
+
+#include "grid.cl"
+#include "PLP.cl"
 
 __kernel void kernelInitGrid(constant parametersForGPU* parameters,
                     global GridPointGPU* grid,
@@ -31,21 +34,21 @@ __kernel void kernelInitGrid(constant parametersForGPU* parameters,
         int xyz[3];
         index1Dto3D(xyzID, &ownGrid, (int*)xyz);
 
-        float coord[3];
-        index3DtoCoords((int*)xyz, &ownGrid, (float*)coord);
+        Float coord[3];
+        index3DtoCoords((int*)xyz, &ownGrid, (Float*)coord);
        
-        float score = 0.0f;
+        Float score = PLUS_0_0f;
 
         for(int i = 0; i < (*numGoodReceptors); i++) {
 
-            score += FplpActual((float*)coord, classID, &(receptorAtoms[receptorIndex[i]]));
+            score += FplpActual((Float*)coord, classID, &(receptorAtoms[receptorIndex[i]]));
         }
 
         grid[xyzID].point[classID] = score;
 
         // Set at index=0 c_site penalty, for coords outside docking site.
         if(xyzID == 0) {
-            grid[xyzID].point[classID] = 50.0f;
+            grid[xyzID].point[classID] = PLUS_50_0f;
         }
     }
 }

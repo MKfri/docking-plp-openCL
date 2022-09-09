@@ -1,13 +1,15 @@
 #ifndef ROULETTE_WHEEL_SELECT_CL_H
 #define ROULETTE_WHEEL_SELECT_CL_H
 
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-#include <tyche_i.cl>
-#include <randomExtra.cl>
+#include "RealConstants.cl"
+#include "constants.cl"
 
-void selectParent(global float* population, global float** parent,
+#include "tyche_i.cl"
+#include "randomExtra.cl"
+
+void selectParent(global Float* population, global Float** parent,
                  int popSize, int chromStoreLen, tyche_i_state* state) {
 
     // Selects one parent
@@ -22,16 +24,16 @@ void selectParent(global float* population, global float** parent,
         lower = currentC * lower + (currentC != 1) * (i + 1);
     }
     // make sure lower is a number between 0 and popSize - 1
-    lower = fmin((float)(popSize - 1), (float)lower);
-    lower = fmax(0.0f, (float)lower);
+    lower = fmin((Float)(popSize - 1), (Float)lower);
+    lower = fmax(PLUS_0_0f, (Float)lower);
 
     *parent = &(population[(int)(lower * chromStoreLen)]);
 }
 
  // NOTE: population MUST BE set at the right begining!
-void RouletteWheelSelect(global float* population, global float** father,
-                         global float** mother, float popSize,
-                         float chromStoreLen, tyche_i_state* state) {
+void RouletteWheelSelect(global Float* population, global Float** father,
+                         global Float** mother, Float popSize,
+                         Float chromStoreLen, tyche_i_state* state) {
     
     selectParent(population, father, popSize, chromStoreLen, state);
     selectParent(population, mother, popSize, chromStoreLen, state);
@@ -41,11 +43,11 @@ void RouletteWheelSelect(global float* population, global float** father,
     // the population lacks diversity
     int j = 0;
     while ( (*father) == (*mother)) {
-      selectParent(population, mother, popSize, chromStoreLen, state);
-      if (j > 100) {
-          printf("Population failure - not enough diversity\n");
-      }
-      j++;
+        selectParent(population, mother, popSize, chromStoreLen, state);
+        if (j > 100) {
+            printf("Population failure - not enough diversity\n");
+        }
+        j++;
     }
 }
 

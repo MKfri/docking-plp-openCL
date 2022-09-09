@@ -1,19 +1,21 @@
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-#include <PLP.cl>
-#include <grid.cl>
+#include "RealConstants.cl"
+#include "constants.cl"
+
+#include "PLP.cl"
+#include "grid.cl"
 
 __kernel void kernelSfClash(constant parametersForGPU* parameters,
                     global AtomGPUsmall* ligandAtomsSmallGlobalAll,
-                    global float* globalPopulations,
+                    global Float* globalPopulations,
                     global int* popNewIndex,
                     global LigandAtomPairsForClash* ligandAtomPairsForClash) {
 
     uint runID = get_global_id(RUN_ID_2D);
     uint individualID = get_global_id(INDIVIDUAL_ID_2D);
 
-    float clashScore = 0.0f;
+    Float clashScore = PLUS_0_0f;
 
     // What part of population to Score (existing (only initial) or new pop) (ALL THREADS SAME PATH).
     if (popNewIndex[0] != 0) {
@@ -33,18 +35,18 @@ __kernel void kernelSfClash(constant parametersForGPU* parameters,
 
             global AtomGPUsmall* atom1 = getAtomGPUsmallFromBase(parameters->popMaxSize, ligandAtomPairsForClash[currentAtom].atom1ID - 1, ligandAtomsOwn);
 
-            float atom1COORD[3];
+            Float atom1COORD[3];
             atom1COORD[0] = atom1->x;
             atom1COORD[1] = atom1->y;
             atom1COORD[2] = atom1->z;
 
             for (int a = currentAtom; a < currentAtom + numAtom1; a++) {
                 global AtomGPUsmall* atom2 = getAtomGPUsmallFromBase(parameters->popMaxSize, ligandAtomPairsForClash[a].atom2ID - 1, ligandAtomsOwn);
-                clashScore += PLPclash((float*)atom1COORD, atom2, ligandAtomPairsForClash[a].rClash);
+                clashScore += PLPclash((Float*)atom1COORD, atom2, ligandAtomPairsForClash[a].rClash);
             }
             currentAtom += numAtom1;
         }
-        global float* individual = getIndividual(parameters->popMaxSize,
+        global Float* individual = getIndividual(parameters->popMaxSize,
                                                 runID, individualID,
                                                 parameters->chromStoreLen,
                                                 globalPopulations);

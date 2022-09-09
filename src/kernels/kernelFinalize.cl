@@ -1,9 +1,11 @@
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-#include <SyncToModel.cl>
+#include "RealConstants.cl"
+#include "constants.cl"
 
-__kernel void kernelFinalize(constant parametersForGPU* parameters, global float* globalPopulations,
+#include "SyncToModel.cl"
+
+__kernel void kernelFinalize(constant parametersForGPU* parameters, global Float* globalPopulations,
                     global AtomGPUsmall* ligandAtomsSmallGlobalAll,
                     global DihedralRefDataGPU* dihedralRefData,
                     global AtomGPUsmall* ligandAtomsSmallResult,
@@ -17,7 +19,7 @@ __kernel void kernelFinalize(constant parametersForGPU* parameters, global float
     if(globalID < parameters->nruns) {
         // Sync:
         global AtomGPUsmall* ligandAtomsOwn = getAtomGPUsmallBase(0, 0, globalID, parameters->ligandNumAtoms, ligandAtomsSmallGlobalAll);
-        global float* individual = getIndividual(parameters->popMaxSize, globalID, parameters->popSize - 1, parameters->chromStoreLen, globalPopulations);
+        global Float* individual = getIndividual(parameters->popMaxSize, globalID, parameters->popSize - 1, parameters->chromStoreLen, globalPopulations);
         syncToModel(ligandAtomsOwn, ligandAtoms, individual, dihedralRefData, parameters);
 
         // Copy to old style Array for Host.

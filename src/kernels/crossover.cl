@@ -1,14 +1,16 @@
 #ifndef CROSSOVER_CL_H
 #define CROSSOVER_CL_H
 
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-#include <tyche_i.cl>
-#include <randomExtra.cl>
+#include "RealConstants.cl"
+#include "constants.cl"
 
-void Crossover(global float* parent1, global float* parent2,
-               global float* child1, global float* child2,
+#include "tyche_i.cl"
+#include "randomExtra.cl"
+
+void Crossover(global Float* parent1, global Float* parent2,
+               global Float* child1, global Float* child2,
                int chromStoreLen, tyche_i_state* state) {
     // No check for same crossover length!
 
@@ -42,15 +44,15 @@ void Crossover(global float* parent1, global float* parent2,
         
         int check = (i >= start && i < end);
 
-        float p1 = parent1[i];
-        float p2 = parent2[i];
-        child1[i] = ((float)check) * p2 + ((float)(check != 1)) * p1;
-        child2[i] = ((float)check) * p1 + ((float)(check != 1)) * p2;
+        Float p1 = parent1[i];
+        Float p2 = parent2[i];
+        child1[i] = ((Float)check) * p2 + ((Float)(check != 1)) * p1;
+        child2[i] = ((Float)check) * p1 + ((Float)(check != 1)) * p2;
     }
 }
 
-void CopyParent2ToChild2(global float* parent1, global float* parent2,
-                       global float* child1, global float* child2,
+void CopyParent2ToChild2(global Float* parent1, global Float* parent2,
+                       global Float* child1, global Float* child2,
                        int chromStoreLen) {
 
     for(int i = 0; i < chromStoreLen - CHROM_SUBTRACT_FOR_CHROM_ACTUAL_LENGTH; i++) {

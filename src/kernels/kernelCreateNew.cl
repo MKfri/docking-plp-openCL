@@ -1,14 +1,16 @@
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-#include <tyche_i.cl>
-#include <rouletteWheelSelect.cl>
-#include <mutate.cl>
-#include <crossover.cl>
+#include "RealConstants.cl"
+#include "constants.cl"
+
+#include "tyche_i.cl"
+#include "rouletteWheelSelect.cl"
+#include "mutate.cl"
+#include "crossover.cl"
 
 __kernel void kernelCreateNew(global tyche_i_state* rngStates,
                     constant parametersForGPU* parameters,
-                    global float* globalPopulations,
+                    global Float* globalPopulations,
                     global int* equalsArray,
                     global int* popNewIndex) {
 
@@ -40,16 +42,16 @@ __kernel void kernelCreateNew(global tyche_i_state* rngStates,
         equalsArray[runID * parameters->nReplicates + 2 * individualID + 1] = 0;
 
         // Get Father and Mother
-        global float* father;
-        global float* mother;
-        global float* population = getIndividual(parameters->popMaxSize, runID, 0, parameters->chromStoreLen, globalPopulations);
+        global Float* father;
+        global Float* mother;
+        global Float* population = getIndividual(parameters->popMaxSize, runID, 0, parameters->chromStoreLen, globalPopulations);
         RouletteWheelSelect(population, &father, &mother, parameters->popSize, parameters->chromStoreLen, &state);
 
         // Get Children
         int child1Index = (2 * individualID + popSize) * parameters->chromStoreLen;
         int child2Index = child1Index + parameters->chromStoreLen;
-        global float* child1 = &(population[child1Index]);
-        global float* child2 = &(population[child2Index]);
+        global Float* child1 = &(population[child1Index]);
+        global Float* child2 = &(population[child2Index]);
         CopyParent2ToChild2(father, mother, child1, child2, parameters->chromStoreLen);
 
         // Crossover
@@ -58,14 +60,14 @@ __kernel void kernelCreateNew(global tyche_i_state* rngStates,
         
             // Cauchy mutation following crossover
             if (parameters->xovermut == 1) {
-                CauchyMutate(child1, parameters->chromStoreLen, 0.0f, parameters->step_size, &state, parameters);
-                CauchyMutate(child2, parameters->chromStoreLen, 0.0f, parameters->step_size, &state, parameters);
+                CauchyMutate(child1, parameters->chromStoreLen, PLUS_0_0f, parameters->step_size, &state, parameters);
+                CauchyMutate(child2, parameters->chromStoreLen, PLUS_0_0f, parameters->step_size, &state, parameters);
             }
         } else { // Mutation
             // Cauchy mutation
             if (parameters->cmutate == 1) {
-                CauchyMutate(child1, parameters->chromStoreLen, 0.0f, parameters->step_size, &state, parameters);
-                CauchyMutate(child2, parameters->chromStoreLen, 0.0f, parameters->step_size, &state, parameters);
+                CauchyMutate(child1, parameters->chromStoreLen, PLUS_0_0f, parameters->step_size, &state, parameters);
+                CauchyMutate(child2, parameters->chromStoreLen, PLUS_0_0f, parameters->step_size, &state, parameters);
             } else { // Regular mutation
                 mutate(child1, parameters->chromStoreLen, parameters->step_size, &state, parameters);
                 mutate(child2, parameters->chromStoreLen, parameters->step_size, &state, parameters);

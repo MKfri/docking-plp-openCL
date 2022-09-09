@@ -1,7 +1,8 @@
 #ifndef CONSTANTS_CL_H
 #define CONSTANTS_CL_H
 
-#include <clStructs.h>
+#include "RealConstants.cl"
+#include "clStructs.h"
 
 enum CHROM_SUBTRACT_FOR_CHROM {
     CHROM_SUBTRACT_FOR_RW_FITNESS = 1,
@@ -65,7 +66,7 @@ inline global AtomGPUsmall* getAtomGPUsmallFromBase(int popMaxSize, int atomInde
 }
 
 // Scoring:
-__constant float BIG_SCORE = 99999.9f;
-__constant float BIG_SCORE_BIGGER = 999999.9f;
+__constant float BIG_SCORE = PLUS_99999_9f;
+__constant float BIG_SCORE_BIGGER = PLUS_999999_9f;
 
 #endif

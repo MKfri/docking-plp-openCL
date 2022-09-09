@@ -1,5 +1,7 @@
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
+
+#include "RealConstants.cl"
+#include "constants.cl"
 
 __kernel void kernelInit2(constant parametersForGPU* parameters,
                     global AtomGPU* ligandAtoms,

@@ -1,24 +1,27 @@
 #ifndef SYNC_TO_MODEL_CL_H
 #define SYNC_TO_MODEL_CL_H
 
-#include <clStructs.h>
-#include <vector3.cl>
-#include <Quat.cl>
-#include <dsyevh3.cl>
-#include <constants.cl>
+#include "clStructs.h"
+
+#include "RealConstants.cl"
+#include "constants.cl"
+
+#include "vector3.cl"
+#include "Quat.cl"
+#include "dsyevh3.cl"
 
 // TODO: setModelValueOccupancyElement(...)
 
 // Returns dihedral formed between 3 vectors
-float Dihedral(global AtomGPUsmall* m_atom1, global AtomGPUsmall* m_atom2, global AtomGPUsmall* m_atom3, global AtomGPUsmall* m_atom4) {
+Float Dihedral(global AtomGPUsmall* m_atom1, global AtomGPUsmall* m_atom2, global AtomGPUsmall* m_atom3, global AtomGPUsmall* m_atom4) {
     // 4 Atoms Recieved DONE!
 
     // 4 Coordinates From Atoms DONE!
 
     // 3 vectors
-    float v1[3];
-    float v2[3];
-    float v3[3];
+    Float v1[3];
+    Float v2[3];
+    Float v3[3];
         // v1
     v1[0] = m_atom1->x - m_atom2->x;
     v1[1] = m_atom1->y - m_atom2->y;
@@ -33,32 +36,32 @@ float Dihedral(global AtomGPUsmall* m_atom1, global AtomGPUsmall* m_atom2, globa
     v3[2] = m_atom3->z - m_atom4->z;
 
     // Calculate the cross products
-    float A[3];
-    float B[3];
-    float C[3];
-    crossProduct3((float*)v1, (float*)v2, (float*)A);
-    crossProduct3((float*)v2, (float*)v3, (float*)B);
-    crossProduct3((float*)v2, (float*)A, (float*)C);
+    Float A[3];
+    Float B[3];
+    Float C[3];
+    crossProduct3((Float*)v1, (Float*)v2, (Float*)A);
+    crossProduct3((Float*)v2, (Float*)v3, (Float*)B);
+    crossProduct3((Float*)v2, (Float*)A, (Float*)C);
 
     // Calculate the distances
-    float rA = lengthNorm3((float*)A);
-    float rB = lengthNorm3((float*)B);
-    float rC = lengthNorm3((float*)C);
+    Float rA = lengthNorm3((Float*)A);
+    Float rB = lengthNorm3((Float*)B);
+    Float rC = lengthNorm3((Float*)C);
 
     // Calculate the sin and cos
-    float cos_phi = dotProduct3((float*)A, (float*)B) / (rA * rB);
-    float sin_phi = dotProduct3((float*)C, (float*)B) / (rC * rB);
+    Float cos_phi = dotProduct3((Float*)A, (Float*)B) / (rA * rB);
+    Float sin_phi = dotProduct3((Float*)C, (Float*)B) / (rC * rB);
 
     // Get phi and convert to degrees
-    float phi = -atan2(sin_phi, cos_phi);
-    return phi * 180.0f / M_PI;
+    Float phi = -atan2(sin_phi, cos_phi);
+    return phi * PLUS_180_0f / PLUS_PI;
 }
 
 inline global AtomGPUsmall* getAtomGPUsmallFromID(global AtomGPUsmall* ligandAtoms,int id, int popMaxSize) {
     return getAtomGPUsmallFromBase(popMaxSize, id - 1, ligandAtoms);
 }
 
-void setModelValueDihedral(global AtomGPUsmall* ligandAtoms, global float* individual, global DihedralRefDataGPU* dihedralRefData, constant parametersForGPU* parameters) {
+void setModelValueDihedral(global AtomGPUsmall* ligandAtoms, global Float* individual, global DihedralRefDataGPU* dihedralRefData, constant parametersForGPU* parameters) {
     // For Every Dihedral
     for(int i = 0; i < parameters->numDihedralElements; i++) {
         global AtomGPUsmall* m_atom1 = getAtomGPUsmallFromID(ligandAtoms, dihedralRefData[i].atom1ID, parameters->popMaxSize);
@@ -66,46 +69,46 @@ void setModelValueDihedral(global AtomGPUsmall* ligandAtoms, global float* indiv
         global AtomGPUsmall* m_atom3 = getAtomGPUsmallFromID(ligandAtoms, dihedralRefData[i].atom3ID, parameters->popMaxSize);
         global AtomGPUsmall* m_atom4 = getAtomGPUsmallFromID(ligandAtoms, dihedralRefData[i].atom4ID, parameters->popMaxSize);
 
-        float delta = individual[i] - Dihedral(m_atom1, m_atom2, m_atom3, m_atom4);
+        Float delta = individual[i] - Dihedral(m_atom1, m_atom2, m_atom3, m_atom4);
 
         // Only rotate if delta is non-zero
-        if (fabs(delta) > 0.001f) {
+        if (fabs(delta) > PLUS_0_001f) {
 
             // Coords of atom 1 ( m_atom2 !!! NOT 1 !! NOT MISTAKE ! )
-            float coord1[3];
+            Float coord1[3];
             coord1[0] = m_atom2->x;
             coord1[1] = m_atom2->y;
             coord1[2] = m_atom2->z;
 
             // Vector along the bond between atom 1 and atom 2 (rotation axis)
             // ( m_atom3 !!! NOT 2 !! NOT MISTAKE ! )
-            float coord2[3];
+            Float coord2[3];
             coord2[0] = m_atom3->x;
             coord2[1] = m_atom3->y;
             coord2[2] = m_atom3->z;
-            float bondVector[3];
-            subtract2Vectors3((float*)coord2, (float*)coord1, (float*)bondVector);
-            float toOrigin[3];
-            negateVector3((float*)coord1, (float*)toOrigin);
-            float quat_v[3];
-            float quat_s;
-            RbtQuat((float*)bondVector, delta * M_PI / 180.0f, &quat_s, (float*)quat_v);
+            Float bondVector[3];
+            subtract2Vectors3((Float*)coord2, (Float*)coord1, (Float*)bondVector);
+            Float toOrigin[3];
+            negateVector3((Float*)coord1, (Float*)toOrigin);
+            Float quat_v[3];
+            Float quat_s;
+            RbtQuat((Float*)bondVector, delta * PLUS_PI / PLUS_180_0f, &quat_s, (Float*)quat_v);
             
-            float tempCoord[3];
-            float translated[3];
-            float rotated[3];
-            float translated2[3];
+            Float tempCoord[3];
+            Float translated[3];
+            Float rotated[3];
+            Float translated2[3];
             for(int j=0; j < dihedralRefData[i].numRotAtoms; j++) {
                 global AtomGPUsmall* tempAtom = getAtomGPUsmallFromID(ligandAtoms, dihedralRefData[i].rotAtomsIDs[j], parameters->popMaxSize);
                 tempCoord[0] = tempAtom->x;
                 tempCoord[1] = tempAtom->y;
                 tempCoord[2] = tempAtom->z;
                 // Translate(toOrigin); (add coordinates together)
-                add2Vectors3((float*)tempCoord, (float*)toOrigin, (float*)translated);
+                add2Vectors3((Float*)tempCoord, (Float*)toOrigin, (Float*)translated);
                 // RotateUsingQuat(quat);
-                RotateUsingQuat(&quat_s, (float*)quat_v, (float*)translated, (float*)rotated);
+                RotateUsingQuat(&quat_s, (Float*)quat_v, (Float*)translated, (Float*)rotated);
                 // Translate(coord1); (add coordinates together)
-                add2Vectors3((float*)rotated, (float*)coord1, (float*)translated2);
+                add2Vectors3((Float*)rotated, (Float*)coord1, (Float*)translated2);
 
                 tempAtom->x = translated2[0];
                 tempAtom->y = translated2[1];
@@ -116,17 +119,17 @@ void setModelValueDihedral(global AtomGPUsmall* ligandAtoms, global float* indiv
 }
 
 // Returns center of mass of atoms in the list
-void GetCenterOfMass(float* com, global AtomGPUsmall* atoms, global AtomGPU* ligandAtomsData, int numAtoms, int popMaxSize) {
+void GetCenterOfMass(Float* com, global AtomGPUsmall* atoms, global AtomGPU* ligandAtomsData, int numAtoms, int popMaxSize) {
     // Default constructor (initialise to zero)
-    com[0] = 0.0f;
-    com[1] = 0.0f;
-    com[2] = 0.0f;
+    com[0] = PLUS_0_0f;
+    com[1] = PLUS_0_0f;
+    com[2] = PLUS_0_0f;
     
     // Accumulate sum of mass*coord
-    float totalMass = 0.0f;
+    Float totalMass = 0.0f;
     for(int i = 0; i < numAtoms; i++) {
         global AtomGPUsmall* tempAtom = getAtomGPUsmallFromBase(popMaxSize, i, atoms);
-        float tempMass = ligandAtomsData[i].atomicMass;
+        Float tempMass = ligandAtomsData[i].atomicMass;
         com[0] += (tempMass * tempAtom->x);
         com[1] += (tempMass * tempAtom->y);
         com[2] += (tempMass * tempAtom->z);
@@ -139,7 +142,7 @@ void GetCenterOfMass(float* com, global AtomGPUsmall* atoms, global AtomGPU* lig
     com[2] /= totalMass;
 }
 
-void GetPrincipalAxes(PrincipalAxesSyncGPU* principalAxes, global AtomGPUsmall* atoms, global AtomGPU* ligandAtomsData, global float* individual, constant parametersForGPU* parameters, int numAtoms) {
+void GetPrincipalAxes(PrincipalAxesSyncGPU* principalAxes, global AtomGPUsmall* atoms, global AtomGPU* ligandAtomsData, global Float* individual, constant parametersForGPU* parameters, int numAtoms) {
     const int N = 3;
 
     // TODO: No check for atomList.empty() !
@@ -147,58 +150,58 @@ void GetPrincipalAxes(PrincipalAxesSyncGPU* principalAxes, global AtomGPUsmall* 
     // TODO: Special case for water !
 
     // Construct default principal axes:
-    principalAxes->com[0] = 0.0f;
-    principalAxes->com[1] = 0.0f;
-    principalAxes->com[2] = 0.0f;
+    principalAxes->com[0] = PLUS_0_0f;
+    principalAxes->com[1] = PLUS_0_0f;
+    principalAxes->com[2] = PLUS_0_0f;
 
-    principalAxes->axis1[0] = 1.0f;
-    principalAxes->axis1[1] = 0.0f;
-    principalAxes->axis1[2] = 0.0f;
+    principalAxes->axis1[0] = PLUS_1_0f;
+    principalAxes->axis1[1] = PLUS_0_0f;
+    principalAxes->axis1[2] = PLUS_0_0f;
 
-    principalAxes->axis2[0] = 0.0f;
-    principalAxes->axis2[1] = 1.0f;
-    principalAxes->axis2[2] = 0.0f;
+    principalAxes->axis2[0] = PLUS_0_0f;
+    principalAxes->axis2[1] = PLUS_1_0f;
+    principalAxes->axis2[2] = PLUS_0_0f;
 
-    principalAxes->axis3[0] = 0.0f;
-    principalAxes->axis3[1] = 0.0f;
-    principalAxes->axis3[2] = 1.0f;
+    principalAxes->axis3[0] = PLUS_0_0f;
+    principalAxes->axis3[1] = PLUS_0_0f;
+    principalAxes->axis3[2] = PLUS_1_0f;
 
-    principalAxes->moment1 = 1.0f;
-    principalAxes->moment2 = 1.0f;
-    principalAxes->moment3 = 1.0f;
+    principalAxes->moment1 = PLUS_1_0f;
+    principalAxes->moment2 = PLUS_1_0f;
+    principalAxes->moment3 = PLUS_1_0f;
 
     // Store center of mass of CURRENT MODEL !!!
-    GetCenterOfMass((float*)principalAxes->com, atoms, ligandAtomsData, numAtoms, parameters->popMaxSize);
+    GetCenterOfMass((Float*)principalAxes->com, atoms, ligandAtomsData, numAtoms, parameters->popMaxSize);
 
     // Construct the moment of inertia tensor
-    float inertiaTensor[3*3];// cuda fix (was: float inertiaTensor[N*N])
+    Float inertiaTensor[3*3];// cuda fix (was: float inertiaTensor[N*N])
     // Set to zero
-    zerosNxN((float*)inertiaTensor, N);
+    zerosNxN((Float*)inertiaTensor, N);
     for(int i=0; i < numAtoms; i++) {
         // Vector from center of mass to atom
-        float r[3];
-        float atomCoord[3];
+        Float r[3];
+        Float atomCoord[3];
         global AtomGPUsmall* tempAtom = getAtomGPUsmallFromBase(parameters->popMaxSize, i, atoms);
         atomCoord[0] = tempAtom->x;
         atomCoord[1] = tempAtom->y;
         atomCoord[2] = tempAtom->z;
-        subtract2Vectors3((float*)atomCoord, (float*)principalAxes->com, (float*)r);
+        subtract2Vectors3((Float*)atomCoord, (Float*)principalAxes->com, (Float*)r);
         // Atomic mass
-        float m = ligandAtomsData[i].atomicMass;
-        float rx2 = r[0] * r[0];
-        float ry2 = r[1] * r[1];
-        float rz2 = r[2] * r[2];
+        Float m = ligandAtomsData[i].atomicMass;
+        Float rx2 = r[0] * r[0];
+        Float ry2 = r[1] * r[1];
+        Float rz2 = r[2] * r[2];
         // Diagonal elements (moments of inertia)
-        float dIxx = m * (ry2 + rz2); //=r^2 - x^2
-        float dIyy = m * (rx2 + rz2); //=r^2 - y^2
-        float dIzz = m * (rx2 + ry2); //=r^2 - z^2
+        Float dIxx = m * (ry2 + rz2); //=r^2 - x^2
+        Float dIyy = m * (rx2 + rz2); //=r^2 - y^2
+        Float dIzz = m * (rx2 + ry2); //=r^2 - z^2
         inertiaTensor[0] += dIxx;// [0][0]
         inertiaTensor[4] += dIyy;// [1][1]
         inertiaTensor[8] += dIzz;// [2][2]
         // Off-diagonal elements (products of inertia) - symmetric matrix
-        float dIxy = m * r[0] * r[1];
-        float dIxz = m * r[0] * r[2];
-        float dIyz = m * r[1] * r[2];
+        Float dIxy = m * r[0] * r[1];
+        Float dIxz = m * r[0] * r[2];
+        Float dIyz = m * r[1] * r[2];
         inertiaTensor[1] -= dIxy;// [0][1]
         inertiaTensor[3] -= dIxy;// [1][0]
         inertiaTensor[2] -= dIxz;// [0][2]
@@ -213,9 +216,9 @@ void GetPrincipalAxes(PrincipalAxesSyncGPU* principalAxes, global AtomGPUsmall* 
 
     // Eigen::MatrixXd eigenVectors = eigenSolver.eigenvectors().real();
 
-    float eigenVectors[3*3];// cuda fix (was: float eigenVectors[N*N])
-    float eigenValues[3];// cuda fix (was: float eigenValues[N])
-    if(dsyevh3((float*)inertiaTensor, (float*)eigenVectors, (float*)eigenValues) != 0) {
+    Float eigenVectors[3*3];// cuda fix (was: float eigenVectors[N*N])
+    Float eigenValues[3];// cuda fix (was: float eigenValues[N])
+    if(dsyevh3((Float*)inertiaTensor, (Float*)eigenVectors, (Float*)eigenValues) != 0) {
         // Failure
         printf("[SyncToModel] [GetPrincipalAxes] [Failed to get eigenVectors and eigenValues]\n");
     } else {
@@ -232,7 +235,7 @@ void GetPrincipalAxes(PrincipalAxesSyncGPU* principalAxes, global AtomGPUsmall* 
         unsigned int idx1 = 0;
         unsigned int idx2 = 1;
         unsigned int idx3 = 2;
-        float swap;
+        Float swap;
         if(eigenValues[idx1] > eigenValues[idx2]) {
             swap = idx1;
             idx1 = idx2;
@@ -275,29 +278,29 @@ void GetPrincipalAxes(PrincipalAxesSyncGPU* principalAxes, global AtomGPUsmall* 
         //
         // LIMITATION: If atom 1 lies exactly on PA#1 or PA#2 this check will fail.
         // Ideally we would like to test an atom on the periphery of the molecule.
-        float c0[3];
-        float firstAtomCoords[3];
+        Float c0[3];
+        Float firstAtomCoords[3];
         // ! Base atoms addr is atoms[0], so it is OK for atom at index 0. For atoms other than 0, [i] IS NOT OK, use getAtomGPUsmallFromBase !
         firstAtomCoords[0] = atoms[0].x;
         firstAtomCoords[1] = atoms[0].y;
         firstAtomCoords[2] = atoms[0].z;
-        subtract2Vectors3((float*)firstAtomCoords, (float*)(principalAxes->com), (float*)c0);
-        float d1 = dotProduct3((float*)c0, (float*)(principalAxes->axis1));
-        float d2 = dotProduct3((float*)c0, (float*)(principalAxes->axis2));
-        if (d1 < 0.0f) {
-            negateVector3((float*)(principalAxes->axis1), (float*)(principalAxes->axis1));
+        subtract2Vectors3((Float*)firstAtomCoords, (Float*)(principalAxes->com), (Float*)c0);
+        Float d1 = dotProduct3((Float*)c0, (Float*)(principalAxes->axis1));
+        Float d2 = dotProduct3((Float*)c0, (Float*)(principalAxes->axis2));
+        if (d1 < PLUS_0_0f) {
+            negateVector3((Float*)(principalAxes->axis1), (Float*)(principalAxes->axis1));
         }
-        if (d2 < 0.0f) {
-            negateVector3((float*)(principalAxes->axis2), (float*)(principalAxes->axis2));
+        if (d2 < PLUS_0_0f) {
+            negateVector3((Float*)(principalAxes->axis2), (Float*)(principalAxes->axis2));
         }
-        crossProduct3((float*)(principalAxes->axis1), (float*)(principalAxes->axis2), (float*)(principalAxes->axis3));
+        crossProduct3((Float*)(principalAxes->axis1), (Float*)(principalAxes->axis2), (Float*)(principalAxes->axis3));
         
     }
     
 }
 
 // For COM and Orientation, Only Once!
-void setModelValuePosition(global AtomGPUsmall* ligandAtoms, global AtomGPU* ligandAtomsData, global float* individual, constant parametersForGPU* parameters) {
+void setModelValuePosition(global AtomGPUsmall* ligandAtoms, global AtomGPU* ligandAtomsData, global Float* individual, constant parametersForGPU* parameters) {
     
     // Determine the principal axes and centre of mass of the reference atoms
     PrincipalAxesSyncGPU prAxes;
@@ -308,57 +311,57 @@ void setModelValuePosition(global AtomGPUsmall* ligandAtoms, global AtomGPU* lig
     // Determine the overall rotation required.
     // 1) Go back to realign with Cartesian axes
     PrincipalAxesSyncGPU CARTESIAN_AXES;
-    CARTESIAN_AXES.com[0] = 0.0f;
-    CARTESIAN_AXES.com[1] = 0.0f;
-    CARTESIAN_AXES.com[2] = 0.0f;
+    CARTESIAN_AXES.com[0] = PLUS_0_0f;
+    CARTESIAN_AXES.com[1] = PLUS_0_0f;
+    CARTESIAN_AXES.com[2] = PLUS_0_0f;
 
-    CARTESIAN_AXES.axis1[0] = 1.0f;
-    CARTESIAN_AXES.axis1[1] = 0.0f;
-    CARTESIAN_AXES.axis1[2] = 0.0f;
+    CARTESIAN_AXES.axis1[0] = PLUS_1_0f;
+    CARTESIAN_AXES.axis1[1] = PLUS_0_0f;
+    CARTESIAN_AXES.axis1[2] = PLUS_0_0f;
 
-    CARTESIAN_AXES.axis2[0] = 0.0f;
-    CARTESIAN_AXES.axis2[1] = 1.0f;
-    CARTESIAN_AXES.axis2[2] = 0.0f;
+    CARTESIAN_AXES.axis2[0] = PLUS_0_0f;
+    CARTESIAN_AXES.axis2[1] = PLUS_1_0f;
+    CARTESIAN_AXES.axis2[2] = PLUS_0_0f;
 
-    CARTESIAN_AXES.axis3[0] = 0.0f;
-    CARTESIAN_AXES.axis3[1] = 0.0f;
-    CARTESIAN_AXES.axis3[2] = 1.0f;
+    CARTESIAN_AXES.axis3[0] = PLUS_0_0f;
+    CARTESIAN_AXES.axis3[1] = PLUS_0_0f;
+    CARTESIAN_AXES.axis3[2] = PLUS_1_0f;
 
-    CARTESIAN_AXES.moment1 = 1.0f;
-    CARTESIAN_AXES.moment2 = 1.0f;
-    CARTESIAN_AXES.moment3 = 1.0f;
+    CARTESIAN_AXES.moment1 = PLUS_1_0f;
+    CARTESIAN_AXES.moment2 = PLUS_1_0f;
+    CARTESIAN_AXES.moment3 = PLUS_1_0f;
 
-    float qBack_v[3];
-    float qBack_s;
-    GetQuatFromAlignAxes(&prAxes, &CARTESIAN_AXES, &qBack_s, (float*)qBack_v);
+    Float qBack_v[3];
+    Float qBack_s;
+    GetQuatFromAlignAxes(&prAxes, &CARTESIAN_AXES, &qBack_s, (Float*)qBack_v);
 
     // 2) Go forward to the desired orientation
-    float qForward_v[3];
-    float qForward_s;
-    float orientation[3];
+    Float qForward_v[3];
+    Float qForward_s;
+    Float orientation[3];
     int startOrientationIndex = (parameters->chromStoreLen) - CHROM_SUBTRACT_FOR_ORIENTATION_1;
     orientation[0] = individual[startOrientationIndex];
     orientation[1] = individual[startOrientationIndex + 1];
     orientation[2] = individual[startOrientationIndex + 2];
-    ToQuat((float*)orientation, &qForward_s, (float*)qForward_v);
+    ToQuat((Float*)orientation, &qForward_s, (Float*)qForward_v);
 
     // 3 Combine the two rotations
-    float q_v[3];
-    float q_s;
-    multiplyQuatResult(&qForward_s, (float*)qForward_v, &qBack_s, (float*)qBack_v, &q_s, (float*)q_v);// RbtQuat q = qForward * qBack;
+    Float q_v[3];
+    Float q_s;
+    multiplyQuatResult(&qForward_s, (Float*)qForward_v, &qBack_s, (Float*)qBack_v, &q_s, (Float*)q_v);// RbtQuat q = qForward * qBack;
     
     
-    float tempCoord[3];
-    float negPrAxesCom[3];
-    negateVector3((float*)prAxes.com, (float*)negPrAxesCom);
-    float translated[3];
-    float rotated[3];
-    float com[3];
+    Float tempCoord[3];
+    Float negPrAxesCom[3];
+    negateVector3((Float*)prAxes.com, (Float*)negPrAxesCom);
+    Float translated[3];
+    Float rotated[3];
+    Float com[3];
     int startComIndex = (parameters->chromStoreLen) - CHROM_SUBTRACT_FOR_CENTER_OF_MASS_1;
     com[0] = individual[startComIndex];
     com[1] = individual[startComIndex + 1];
     com[2] = individual[startComIndex + 2];
-    float translated2[3];
+    Float translated2[3];
     for(int i = 0; i < parameters->ligandNumAtoms; i++) {
         global AtomGPUsmall* tempAtom = getAtomGPUsmallFromBase(parameters->popMaxSize, i, ligandAtoms);
 
@@ -367,11 +370,11 @@ void setModelValuePosition(global AtomGPUsmall* ligandAtoms, global AtomGPU* lig
         tempCoord[2] = tempAtom->z;
 
         // Move to origin
-        add2Vectors3((float*)tempCoord, (float*)negPrAxesCom, (float*)translated);
+        add2Vectors3((Float*)tempCoord, (Float*)negPrAxesCom, (Float*)translated);
         // Rotate
-        RotateUsingQuat(&q_s, (float*)q_v, (float*)translated, (float*)rotated);
+        RotateUsingQuat(&q_s, (Float*)q_v, (Float*)translated, (Float*)rotated);
         // Move to new centre of mass
-        add2Vectors3((float*)rotated, (float*)com, (float*)translated2);
+        add2Vectors3((Float*)rotated, (Float*)com, (Float*)translated2);
 
         tempAtom->x = translated2[0];
         tempAtom->y = translated2[1];
@@ -381,7 +384,7 @@ void setModelValuePosition(global AtomGPUsmall* ligandAtoms, global AtomGPU* lig
     
 }
 
-void syncToModel(global AtomGPUsmall* ligandAtoms, global AtomGPU* ligandAtomsData, global float* individual, global DihedralRefDataGPU* dihedralRefData, constant parametersForGPU* parameters) {
+void syncToModel(global AtomGPUsmall* ligandAtoms, global AtomGPU* ligandAtomsData, global Float* individual, global DihedralRefDataGPU* dihedralRefData, constant parametersForGPU* parameters) {
     // TODO: setModelValueOccupancyElement(...)
     setModelValueDihedral(ligandAtoms, individual, dihedralRefData, parameters);
     setModelValuePosition(ligandAtoms, ligandAtomsData, individual, parameters);

@@ -1,12 +1,14 @@
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-#include <sortPopulation.cl>
-#include <Equals.cl>
+#include "RealConstants.cl"
+#include "constants.cl"
 
-__kernel void kernelSort(constant parametersForGPU* parameters, global float* globalPopulations,
-                    global float* globalPopulationsCopy,
-                    local float* localScore, local ushort* localIndexes,
+#include "sortPopulation.cl"
+#include "Equals.cl"
+
+__kernel void kernelSort(constant parametersForGPU* parameters, global Float* globalPopulations,
+                    global Float* globalPopulationsCopy,
+                    local Float* localScore, local ushort* localIndexes,
                     global int* popNewIndex) {
 
     uint runID=get_global_id(RUN_ID_2D);
@@ -35,8 +37,8 @@ __kernel void kernelSort(constant parametersForGPU* parameters, global float* gl
 
     for(int i=startIndex; i < endIndex && i < size; i++) {
         
-        global float* individual = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulations);
-        global float* individualCopy = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulationsCopy);
+        global Float* individual = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulations);
+        global Float* individualCopy = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulationsCopy);
 
         // Local Copy:
         localScore[i] = individual[chromStoreLen - CHROM_SUBTRACT_FOR_SCORE];
@@ -82,8 +84,8 @@ __kernel void kernelSort(constant parametersForGPU* parameters, global float* gl
 
             int copyDestination = (int)localIndexes[step01 * popMaxSize + i];
 
-            global float* individualCopy = getIndividual(popMaxSize, runID, copyDestination, chromStoreLen, globalPopulationsCopy);
-            global float* individual = getIndividual(popMaxSize, runID, i - nReplicates, chromStoreLen, globalPopulations);
+            global Float* individualCopy = getIndividual(popMaxSize, runID, copyDestination, chromStoreLen, globalPopulationsCopy);
+            global Float* individual = getIndividual(popMaxSize, runID, i - nReplicates, chromStoreLen, globalPopulations);
             
             // Global Copy (Whole)
             for(int j=0; j < chromStoreLen; j++) {
@@ -98,8 +100,8 @@ __kernel void kernelSort(constant parametersForGPU* parameters, global float* gl
 
             int copyDestination = (int)localIndexes[step01 * popMaxSize + i];
 
-            global float* individual = getIndividual(popMaxSize, runID, copyDestination, chromStoreLen, globalPopulations);
-            global float* individualCopy = getIndividual(popMaxSize, runID, sizeM1 - i, chromStoreLen, globalPopulationsCopy);
+            global Float* individual = getIndividual(popMaxSize, runID, copyDestination, chromStoreLen, globalPopulations);
+            global Float* individualCopy = getIndividual(popMaxSize, runID, sizeM1 - i, chromStoreLen, globalPopulationsCopy);
             
             // Global Copy (Whole)
             for(int j=0; j < chromStoreLen; j++) {
@@ -111,8 +113,8 @@ __kernel void kernelSort(constant parametersForGPU* parameters, global float* gl
         // Check i and i+1 and if equals set i+1 as 0, that is why sizeM1, NOT size.
         for(int i=startIndex; i < endIndex && i < sizeM1; i++) {
 
-            global float* individual1 = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulationsCopy);
-            global float* individual2 = getIndividual(popMaxSize, runID, i + 1, chromStoreLen, globalPopulationsCopy);
+            global Float* individual1 = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulationsCopy);
+            global Float* individual2 = getIndividual(popMaxSize, runID, i + 1, chromStoreLen, globalPopulationsCopy);
 
             localIndexes[i+1] = EqualsGenome(individual1, individual2, parameters);// 0=Equals, 1=Good
             localIndexes[popMaxSize+i+1] = localIndexes[i+1];
@@ -156,8 +158,8 @@ __kernel void kernelSort(constant parametersForGPU* parameters, global float* gl
 
             if(localIndexes[i] == 1 && localIndexes[i+popMaxSize] < popSize) {// Copy only good and only popSize number
 
-                global float* individualCopy = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulationsCopy);
-                global float* individual = getIndividual(popMaxSize, runID, popSizeM1 - localIndexes[i+popMaxSize], chromStoreLen, globalPopulations);
+                global Float* individualCopy = getIndividual(popMaxSize, runID, i, chromStoreLen, globalPopulationsCopy);
+                global Float* individual = getIndividual(popMaxSize, runID, popSizeM1 - localIndexes[i+popMaxSize], chromStoreLen, globalPopulations);
                 
                 // Global Copy (Whole)
                 for(int j=0; j < chromStoreLen; j++) {

@@ -10,24 +10,26 @@ Int. J. Mod. Phys. C19 (2008) 523-548
 #ifndef DSYEVH3_CL_H
 #define DSYEVH3_CL_H
 
+#include "RealConstants.cl"
+
 // Constants
-#define M_SQRT3    1.73205080756887729352744634151f   // sqrt(3)
+//#define M_SQRT3    1.73205080756887729352744634151f   // sqrt(3)
 
 // Macros
 #define SQR(x)      ((x)*(x)) // x^2 
 
-int dsyevc3(float* A, float* w) {
+int dsyevc3(Float* A, Float* w) {
     //      float A[3][3], float w[3]
     
-    float m, c1, c0;
+    Float m, c1, c0;
     // Determine coefficients of characteristic poynomial. We write
     //       | a   d   f  |
     //  A =  | d*  b   e  |
     //       | f*  e*  c  |
-    float de = A[1] * A[5];// d * e    A[0][1] * A[1][2]
-    float dd = SQR(A[1]);// d^2        A[0][1]
-    float ee = SQR(A[5]);// e^2        A[1][2]
-    float ff = SQR(A[2]);// f^2        A[0][2]
+    Float de = A[1] * A[5];// d * e    A[0][1] * A[1][2]
+    Float dd = SQR(A[1]);// d^2        A[0][1]
+    Float ee = SQR(A[5]);// e^2        A[1][2]
+    Float ff = SQR(A[2]);// f^2        A[0][2]
     m  = A[0] + A[4] + A[8];// A[0][0] + A[1][1] + A[2][2]
 
     // a*b + a*c + b*c - d^2 - e^2 - f^2
@@ -35,21 +37,21 @@ int dsyevc3(float* A, float* w) {
     //  (A[0][0]*A[1][1] + A[0][0]*A[2][2] + A[1][1]*A[2][2]) - (dd + ee + ff);
 
     // c*d^2 + a*e^2 + b*f^2 - a*b*c - 2*f*d*e)
-    c0 = A[8]*dd + A[0]*ee + A[4]*ff - A[0]*A[4]*A[8] - 2.0f * A[2]*de;
+    c0 = A[8]*dd + A[0]*ee + A[4]*ff - A[0]*A[4]*A[8] - PLUS_2_0f * A[2]*de;
     //  A[2][2]*dd + A[0][0]*ee + A[1][1]*ff - A[0][0]*A[1][1]*A[2][2] - 2.0 * A[0][2]*de;
 
-    float p, sqrt_p, q, c, s, phi;
-    p = SQR(m) - 3.0f*c1;
-    q = m*(p - (3.0f/2.0f)*c1) - (27.0f/2.0f)*c0;
+    Float p, sqrt_p, q, c, s, phi;
+    p = SQR(m) - PLUS_3_0f * c1;
+    q = m * (p - (PLUS_3_0f / PLUS_2_0f) * c1) - (PLUS_27_0f / PLUS_2_0f) * c0;
     sqrt_p = sqrt(fabs(p));
 
-    phi = 27.0f * ( 0.25f*SQR(c1)*(p - c1) + c0*(q + 27.0f/4.0f*c0));
-    phi = (1.0f/3.0f) * atan2(sqrt(fabs(phi)), q);
+    phi = PLUS_27_0f * (PLUS_0_25f * SQR(c1) * (p - c1) + c0 * (q + PLUS_27_0f / PLUS_4_0f * c0));
+    phi = (PLUS_1_0f / PLUS_3_0f) * atan2(sqrt(fabs(phi)), q);
 
-    c = sqrt_p*cos(phi);
-    s = (1.0f/M_SQRT3)*sqrt_p*sin(phi);
+    c = sqrt_p * cos(phi);
+    s = (PLUS_1_0f / PLUS_SQRT_3f) * sqrt_p * sin(phi);
 
-    w[1]  = (1.0f/3.0f)*(m - c);
+    w[1]  = (PLUS_1_0f / PLUS_3_0f) * (m - c);
     w[2]  = w[1] + s;
     w[0]  = w[1] + c;
     w[1] -= s;
@@ -57,25 +59,25 @@ int dsyevc3(float* A, float* w) {
     return 0;
 }
 
-void dsytrd3(float* A, float* Q, float* d, float* e) {
+void dsytrd3(Float* A, Float* Q, Float* d, Float* e) {
     //      float A[3][3], float Q[3][3], float d[3], float e[2]
     const int n = 3;
-    float u[3], q[3];// cuda fix (was: float u[n], q[n])
-    float omega, f;
-    float K, h, g;
+    Float u[3], q[3];// cuda fix (was: float u[n], q[n])
+    Float omega, f;
+    Float K, h, g;
     int i;
     int j;
 
     for (i=0; i < n; i++) {
-        Q[i*3+i] = 1.0f; // Q[i][i] = 1.0
+        Q[i*3+i] = PLUS_1_0f; // Q[i][i] = 1.0
         for (int j=0; j < i; j++) {
-            Q[i*3+j] = Q[j*3+i] = 0.0f; // Q[i][j] = Q[j][i] = 0.0
+            Q[i*3+j] = Q[j*3+i] = PLUS_0_0f; // Q[i][j] = Q[j][i] = 0.0
         }
     }
 
     // Bring first row and column to the desired form 
     h = SQR(A[1]) + SQR(A[2]);// SQR(A[0][1]) + SQR(A[0][2])
-    if (A[1] > 0.0f) {  // A[0][1] > 0
+    if (A[1] > PLUS_0_0f) {  // A[0][1] > 0
         g = -sqrt(h);
     } else {
         g = sqrt(h);
@@ -86,23 +88,23 @@ void dsytrd3(float* A, float* Q, float* d, float* e) {
     u[2] = A[2];// A[0][2]
 
     omega = h - f;
-    if (omega > 0.0f) {
-        omega = 1.0f / omega;
-        K     = 0.0f;
+    if (omega > PLUS_0_0f) {
+        omega = PLUS_1_0f / omega;
+        K     = PLUS_0_0f;
         for (i=1; i < n; i++) {
             f    = A[3+i] * u[1] + A[i*3+2] * u[2];// A[1][i] * u[1] + A[i][2] * u[2]
             q[i] = omega * f;// p
             K   += u[i] * f;// u* A u
         }
-        K *= 0.5f * SQR(omega);
+        K *= PLUS_0_5f * SQR(omega);
 
         for (i=1; i < n; i++) {
             q[i] = q[i] - K * u[i];
         }
 
         d[0] = A[0];// A[0][0]
-        d[1] = A[4] - 2.0f*q[1]*u[1];// A[1][1] - 2.0*q[1]*u[1]
-        d[2] = A[8] - 2.0f*q[2]*u[2];// A[2][2] - 2.0*q[2]*u[2]
+        d[1] = A[4] - PLUS_2_0f*q[1]*u[1];// A[1][1] - 2.0*q[1]*u[1]
+        d[2] = A[8] - PLUS_2_0f*q[2]*u[2];// A[2][2] - 2.0*q[2]*u[2]
 
         // Store inverse Householder transformation in Q
         for (j=1; j < n; j++) {
@@ -124,17 +126,17 @@ void dsytrd3(float* A, float* Q, float* d, float* e) {
 
 }
 
-int dsyevq3(float* A, float* Q, float* w) {
+int dsyevq3(Float* A, Float* Q, Float* w) {
     //      float A[3][3], float Q[3][3], float w[3]
 
     const int n = 3;
-    float e[3];                   // The third element is used only as temporary workspace
-    float g, r, p, f, b, s, c, t; // Intermediate storage
+    Float e[3];                   // The third element is used only as temporary workspace
+    Float g, r, p, f, b, s, c, t; // Intermediate storage
     int nIter;
     int m, l, i, k;
 
     // Transform A to real tridiagonal form by the Householder method
-    dsytrd3(A, Q, w, (float*)e);
+    dsytrd3(A, Q, w, (Float*)e);
 
     // Calculate eigensystem of the remaining real symmetric tridiagonal matrix
     // with the QL method
@@ -160,32 +162,32 @@ int dsyevq3(float* A, float* Q, float* w) {
 
             // Calculate g = d_m - k
             g = (w[l+1] - w[l]) / (e[l] + e[l]);
-            r = sqrt(SQR(g) + 1.0f);
-            if (g > 0.0f) {
+            r = sqrt(SQR(g) + PLUS_1_0f);
+            if (g > PLUS_0_0f) {
                 g = w[m] - w[l] + e[l]/(g + r);
             } else {
                 g = w[m] - w[l] + e[l]/(g - r);
             }
 
-            s = c = 1.0f;
-            p = 0.0f;
+            s = c = PLUS_1_0f;
+            p = PLUS_0_0f;
             for (i=m-1; i >= l; i--) {
                 f = s * e[i];
                 b = c * e[i];
                 if (fabs(f) > fabs(g)) {
                     c      = g / f;
-                    r      = sqrt(SQR(c) + 1.0f);
+                    r      = sqrt(SQR(c) + PLUS_1_0f);
                     e[i+1] = f * r;
-                    c     *= (s = 1.0f/r);
+                    c     *= (s = PLUS_1_0f/r);
                 } else {
                     s      = f / g;
-                    r      = sqrt(SQR(s) + 1.0f);
+                    r      = sqrt(SQR(s) + PLUS_1_0f);
                     e[i+1] = g * r;
-                    s     *= (c = 1.0f/r);
+                    s     *= (c = PLUS_1_0f/r);
                 }
 
                 g = w[i+1] - p;
-                r = (w[i] - g)*s + 2.0f*c*b;
+                r = (w[i] - g)*s + PLUS_2_0f*c*b;
                 p = s * r;
                 w[i+1] = g + p;
                 g = c*r - b;
@@ -200,7 +202,7 @@ int dsyevq3(float* A, float* Q, float* w) {
 
             w[l] -= p;
             e[l]  = g;
-            e[m]  = 0.0f;
+            e[m]  = PLUS_0_0f;
         }
     }
 
@@ -208,12 +210,12 @@ int dsyevq3(float* A, float* Q, float* w) {
 }
 
 
-int dsyevh3(float* A, float* Q, float* w) {
+int dsyevh3(Float* A, Float* Q, Float* w) {
     //      float A[3][3], float Q[3][3], float w[3]
 
-    float norm;// Squared norm or inverse norm of current eigenvector
-    float error;// Estimated maximum roundoff error
-    float t, u;// Intermediate storage
+    Float norm;// Squared norm or inverse norm of current eigenvector
+    Float error;// Estimated maximum roundoff error
+    Float t, u;// Intermediate storage
 
     // Calculate eigenvalues
     dsyevc3(A, w);
@@ -225,12 +227,12 @@ int dsyevh3(float* A, float* Q, float* w) {
     if ((u=fabs(w[2])) > t) {
         t = u;
     }
-    if (t < 1.0f) {
+    if (t < PLUS_1_0f) {
         u = t;
     } else {
         u = SQR(t);
     }
-    error = 256.0f * FLT_EPSILON * SQR(u);
+    error = PLUS_256_0f * FLT_EPSILON * SQR(u);
 
     Q[1] = A[1]*A[5] - A[2]*A[4];// Q[0][1] = A[0][1]*A[1][2] - A[0][2]*A[1][1]
     Q[4] = A[2]*A[1] - A[5]*A[0];// Q[1][1] = A[0][2]*A[0][1] - A[1][2]*A[0][0]
@@ -252,7 +254,7 @@ int dsyevh3(float* A, float* Q, float* w) {
     if (norm <= error) {
         return dsyevq3(A, Q, w);
     } else { // This is the standard branch
-        norm = sqrt(1.0f / norm);
+        norm = sqrt(PLUS_1_0f / norm);
 
         Q[0] = Q[0] * norm; // Q[j][0] = Q[j][0] * norm     for j=0
         Q[3] = Q[3] * norm; // Q[j][0] = Q[j][0] * norm     for j=1
@@ -267,7 +269,7 @@ int dsyevh3(float* A, float* Q, float* w) {
     if (norm <= error) {
         return dsyevq3(A, Q, w);
     } else {
-        norm = sqrt(1.0f / norm);
+        norm = sqrt(PLUS_1_0f / norm);
 
         Q[1] = Q[1] * norm; // Q[j][1] = Q[j][1] * norm     for j=0
         Q[4] = Q[4] * norm; // Q[j][1] = Q[j][1] * norm     for j=1

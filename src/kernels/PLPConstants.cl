@@ -12,6 +12,8 @@ Using PLANTS Model5
 #ifndef PLP_CONSTANTS_CL_H
 #define PLP_CONSTANTS_CL_H
 
+#include "RealConstants.cl"
+
 enum CHROM_m_mode_eMode {
     CHROM_m_mode_eMode_FIXED = 0,
     CHROM_m_mode_eMode_TETHERED = 1,
@@ -98,14 +100,14 @@ enum PLP_CLASH_CLASS {
 typedef enum PLP_CLASH_CLASS PLP_CLASH_CLASS;
 
 //Model5 weights:
-#define W_PLP_HB_M5 -2.00f
-#define W_PLP_MET_M5 -4.00f
-#define W_PLP_BUR_M5 -0.05f
-#define W_PLP_NONP_M5 -0.40f
-#define W_PLP_REP_M5 0.50f
+#define W_PLP_HB_M5 MINUS_2_0f // -2.00f 
+#define W_PLP_MET_M5  MINUS_4_0f // -4.00f
+#define W_PLP_BUR_M5  MINUS_0_05f // -0.05f
+#define W_PLP_NONP_M5  MINUS_0_4f // -0.40f
+#define W_PLP_REP_M5  PLUS_0_5f // 0.50f
 // SINCE = 1.0, NOT TAKEN INTO ACCOUNT, IF CHANGED, FIX PROGRAM:
 // W_PLP_TORS_M5 * sum(all_tors)    (now tors parts all put into "score" with all other parts).
-#define W_PLP_TORS_M5 1.00f
+#define W_PLP_TORS_M5 PLUS_1_0f // 1.00f
 
 // TABLES:
 
@@ -208,42 +210,42 @@ __constant int INTERACTION_TABLE[49] = {
 };
 
 __constant float FPLP_TABLE[36] = {
-    2.3f,// A PLP_INTERACTION_hbond
-    2.6f,// B PLP_INTERACTION_hbond
-    3.1f,// C PLP_INTERACTION_hbond
-    3.4f,// D PLP_INTERACTION_hbond
+    PLUS_2_3f,// A PLP_INTERACTION_hbond
+    PLUS_2_6f,// B PLP_INTERACTION_hbond
+    PLUS_3_1f,// C PLP_INTERACTION_hbond
+    PLUS_3_4f,// D PLP_INTERACTION_hbond
     W_PLP_HB_M5,// E PLP_INTERACTION_hbond
-    20.0f,// F PLP_INTERACTION_hbond
-    3.2f,// A PLP_INTERACTION_repulsive
-    5.0f,// B PLP_INTERACTION_repulsive
-    W_PLP_REP_M5 * 0.1f,// C PLP_INTERACTION_repulsive
-    W_PLP_REP_M5 * 20.0f,// D PLP_INTERACTION_repulsive
-    222.222f,// E PLP_INTERACTION_repulsive (Must be different than x to prevent devide by zero)
-    333.333f,// F PLP_INTERACTION_repulsive (Must be different than x to prevent devide by zero)
-    3.4f,// A PLP_INTERACTION_buried
-    3.6f,// B PLP_INTERACTION_buried
-    4.5f,// C PLP_INTERACTION_buried
-    5.5f,// D PLP_INTERACTION_buried
+    PLUS_20_0f,// F PLP_INTERACTION_hbond
+    PLUS_3_2f,// A PLP_INTERACTION_repulsive
+    PLUS_5_0f,// B PLP_INTERACTION_repulsive
+    W_PLP_REP_M5 * PLUS_0_1f,// C PLP_INTERACTION_repulsive
+    W_PLP_REP_M5 * PLUS_20_0f,// D PLP_INTERACTION_repulsive
+    PLUS_222_222f,// E PLP_INTERACTION_repulsive (Must be different than x to prevent devide by zero)
+    PLUS_333_333f,// F PLP_INTERACTION_repulsive (Must be different than x to prevent devide by zero)
+    PLUS_3_4f,// A PLP_INTERACTION_buried
+    PLUS_3_6f,// B PLP_INTERACTION_buried
+    PLUS_4_5f,// C PLP_INTERACTION_buried
+    PLUS_5_5f,// D PLP_INTERACTION_buried
     W_PLP_BUR_M5,// E PLP_INTERACTION_buried
-    20.0f,// F PLP_INTERACTION_buried
-    1.4f,// A PLP_INTERACTION_metal
-    2.2f,// B PLP_INTERACTION_metal
-    2.6f,// C PLP_INTERACTION_metal
-    2.8f,// D PLP_INTERACTION_metal
+    PLUS_20_0f,// F PLP_INTERACTION_buried
+    PLUS_1_4f,// A PLP_INTERACTION_metal
+    PLUS_2_2f,// B PLP_INTERACTION_metal
+    PLUS_2_6f,// C PLP_INTERACTION_metal
+    PLUS_2_8f,// D PLP_INTERACTION_metal
     W_PLP_MET_M5,// E PLP_INTERACTION_metal
-    20.0f,// F PLP_INTERACTION_metal
-    3.4f,// A PLP_INTERACTION_nonpolar
-    3.6f,// B PLP_INTERACTION_nonpolar
-    4.5f,// C PLP_INTERACTION_nonpolar
-    5.5f,// D PLP_INTERACTION_nonpolar
+    PLUS_20_0f,// F PLP_INTERACTION_metal
+    PLUS_3_4f,// A PLP_INTERACTION_nonpolar
+    PLUS_3_6f,// B PLP_INTERACTION_nonpolar
+    PLUS_4_5f,// C PLP_INTERACTION_nonpolar
+    PLUS_5_5f,// D PLP_INTERACTION_nonpolar
     W_PLP_NONP_M5,// E PLP_INTERACTION_nonpolar
-    20.0f,// F PLP_INTERACTION_nonpolar
-    999.999f,// A PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
-    888.888f,// B PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
-    777.777f,// C PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
-    666.666f,// D PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
-    555.555f,// E PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
-    444.444f// F PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
+    PLUS_20_0f,// F PLP_INTERACTION_nonpolar
+    PLUS_999_999f,// A PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
+    PLUS_888_888f,// B PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
+    PLUS_777_777f,// C PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
+    PLUS_666_666f,// D PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
+    PLUS_555_555f,// E PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
+    PLUS_444_444f// F PLP_INTERACTION_NO_INTERACTION (Must be different than x to prevent devide by zero)
 };
 
 __constant int CLASH_CLASSIFICATION_TABLE[43] = {

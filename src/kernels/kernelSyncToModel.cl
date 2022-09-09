@@ -1,9 +1,11 @@
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-#include <SyncToModel.cl>
+#include "RealConstants.cl"
+#include "constants.cl"
 
-__kernel void kernelSyncToModel(constant parametersForGPU* parameters, global float* globalPopulations,
+#include "SyncToModel.cl"
+
+__kernel void kernelSyncToModel(constant parametersForGPU* parameters, global Float* globalPopulations,
                     global AtomGPUsmall* ligandAtomsSmallGlobalAll,
                     global DihedralRefDataGPU* dihedralRefData,
                     global int* popNewIndex,
@@ -21,11 +23,11 @@ __kernel void kernelSyncToModel(constant parametersForGPU* parameters, global fl
     if (individualID >= popNewIndex[0] && individualID < popNewIndex[1]) {
 
         global AtomGPUsmall* ligandAtomsOwn = getAtomGPUsmallBase(parameters->popMaxSize, runID, individualID, parameters->ligandNumAtoms, ligandAtomsSmallGlobalAll);
-        global float* individual = getIndividual(parameters->popMaxSize, runID, individualID, parameters->chromStoreLen, globalPopulations);
+        global Float* individual = getIndividual(parameters->popMaxSize, runID, individualID, parameters->chromStoreLen, globalPopulations);
 
         // Before we evaluate each individual, we set his score to 0.0
         // to allow splitting evaluation of SF into multiple kernels.
-        individual[parameters->chromStoreLen - CHROM_SUBTRACT_FOR_SCORE] = 0.0f;
+        individual[parameters->chromStoreLen - CHROM_SUBTRACT_FOR_SCORE] = PLUS_0_0f;
 
         syncToModel(ligandAtomsOwn, ligandAtoms, individual, dihedralRefData, parameters); 
     }

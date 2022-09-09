@@ -1,14 +1,16 @@
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-#include <tyche_i.cl>
-#include <classification.cl>
-#include <PLP.cl>
+#include "RealConstants.cl"
+#include "constants.cl"
+
+#include "tyche_i.cl"
+#include "classification.cl"
+#include "PLP.cl"
 
 __kernel void kernelInit(global ulong* seed, global tyche_i_state* rngStates,
                     constant parametersForGPU* parameters,
                     global AtomGPU* ligandAtoms, global AtomGPU* receptorAtoms,
-                    global float* globalPopulations,
+                    global Float* globalPopulations,
                     global LigandAtomPairsForClash* ligandAtomPairsForClash,
                     global DihedralRefDataGPU* dihedralRefData,
                     global BondGPU* ligandBonds) {
@@ -78,7 +80,7 @@ __kernel void kernelInit(global ulong* seed, global tyche_i_state* rngStates,
     // 5. Set Individual Score to big values so first sort works correctly
     if(individualID < parameters->popMaxSize) {
 
-        global float* individual = getIndividual(parameters->popMaxSize, runID, individualID, parameters->chromStoreLen, globalPopulations);
+        global Float* individual = getIndividual(parameters->popMaxSize, runID, individualID, parameters->chromStoreLen, globalPopulations);
         individual[parameters->chromStoreLen - CHROM_SUBTRACT_FOR_SCORE] = BIG_SCORE_BIGGER;
     }
 }

@@ -1,14 +1,16 @@
 #ifndef SORT_POPULATIONS_CL_H
 #define SORT_POPULATIONS_CL_H
 
+#include "RealConstants.cl"
+
 // Adapter from: https://www.geeksforgeeks.org/bubble-sort/
-void bubblePopulationSort(int startIndex, int endIndex, local float* array, local ushort* indexes) {
+void bubblePopulationSort(int startIndex, int endIndex, local Float* array, local ushort* indexes) {
     
-    local float* arraySetToZero = &(array[startIndex]);
+    local Float* arraySetToZero = &(array[startIndex]);
     local ushort* indexesSetToZero = &(indexes[startIndex]);
     int n = endIndex - startIndex;
 
-    float tempRW;
+    Float tempRW;
     ushort tempI;
     for (int i = 0; i < n-1; i++) {
         for (int j = 0; j < n-i-1; j++) {
@@ -27,7 +29,7 @@ void bubblePopulationSort(int startIndex, int endIndex, local float* array, loca
 }
 
 // Adapter from: https://www.geeksforgeeks.org/merge-sort/
-void mergePopulationSort(int startIndex, int length, int step01, int popMaxSize, int size, local float* array, local ushort* indexes) {
+void mergePopulationSort(int startIndex, int length, int step01, int popMaxSize, int size, local Float* array, local ushort* indexes) {
     // step01 == 1, put in second part od array
     int source = (step01 == 0) ? 1 : 0;
     int destination = step01;

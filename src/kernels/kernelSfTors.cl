@@ -1,18 +1,20 @@
-#include <clStructs.h>
-#include <constants.cl>
+#include "clStructs.h"
 
-#include <PLP.cl>
-#include <grid.cl>
+#include "RealConstants.cl"
+#include "constants.cl"
+
+#include "PLP.cl"
+#include "grid.cl"
 
 __kernel void kernelSfTors(constant parametersForGPU* parameters,
-                    global float* globalPopulations,
+                    global Float* globalPopulations,
                     global int* popNewIndex,
                     global DihedralRefDataGPU* dihedralRefData) {
 
     uint runID = get_global_id(RUN_ID_2D);
     uint individualID = get_global_id(INDIVIDUAL_ID_2D);
 
-    float torsionalScore = 0.0f;
+    Float torsionalScore = PLUS_0_0f;
 
     // What part of population to Score (existing (only initial) or new pop) (ALL THREADS SAME PATH).
     if (popNewIndex[0] != 0) {
@@ -21,7 +23,7 @@ __kernel void kernelSfTors(constant parametersForGPU* parameters,
 
     // Score Individuals
     if (individualID >= popNewIndex[0] && individualID < popNewIndex[1]) {
-        global float* individual = getIndividual(parameters->popMaxSize,
+        global Float* individual = getIndividual(parameters->popMaxSize,
                                                 runID, individualID,
                                                 parameters->chromStoreLen,
                                                 globalPopulations);
